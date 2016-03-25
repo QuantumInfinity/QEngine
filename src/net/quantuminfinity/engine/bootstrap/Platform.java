@@ -1,4 +1,4 @@
-package net.quantuminfinity.qengine.bootstrap;
+package net.quantuminfinity.engine.bootstrap;
 
 import java.util.Locale;
 

@@ -1,4 +1,4 @@
-package net.quantuminfinity.qengine.bootstrap;
+package net.quantuminfinity.engine.bootstrap;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -7,9 +7,9 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 
-import net.quantuminfinity.qengine.bootstrap.Platform.Bitmodel;
-import net.quantuminfinity.qengine.bootstrap.Platform.OSType;
-import net.quantuminfinity.qengine.bootstrap.Platform.UnsupportedPlatformException;
+import net.quantuminfinity.engine.bootstrap.Platform.Bitmodel;
+import net.quantuminfinity.engine.bootstrap.Platform.OSType;
+import net.quantuminfinity.engine.bootstrap.Platform.UnsupportedPlatformException;
 
 public class NativeLoader
 {
@@ -40,32 +40,6 @@ public class NativeLoader
 	public String getNativePath()
 	{
 		return nativePath.getAbsolutePath() + File.separatorChar;
-	}
-	
-	public void deleteNatives()
-	{
-		deleteDirectory(nativePath);
-	}
-	
-	private static void deleteDirectory(File directory)
-	{
-		File[] files = directory.listFiles();
-		if(files != null)
-		{
-			for(File f : files)
-			{
-				if(f.isDirectory())
-					deleteDirectory(f);
-				else
-	            	f.delete();
-			}
-		}
-		directory.delete();
-	}
-	
-	public static void nop()
-	{
-		
 	}
 	
 	private static void copyFromJar(String from, File to) throws IOException

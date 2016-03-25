@@ -1,4 +1,4 @@
-package net.quantuminfinity.qengine.resource;
+package net.quantuminfinity.engine.resource;
 
 import java.io.File;
 import java.io.FileInputStream;
