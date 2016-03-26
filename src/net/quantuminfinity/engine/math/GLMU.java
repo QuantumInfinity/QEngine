@@ -2,7 +2,7 @@ package net.quantuminfinity.engine.math;
 
 import org.lwjgl.opengl.GL11;
 
-import net.quantuminfinity.engine.display.GLWindow;
+import net.quantuminfinity.engine.display.Display;
 import net.quantuminfinity.engine.gl.util.Project;
 
 public class GLMU
@@ -35,13 +35,13 @@ public class GLMU
 		GL11.glEnable(GL11.GL_DEPTH_TEST);
 	}
 	
-	public static void initGL2D(GLWindow w)
+	public static void initGL2D(Display d)
 	{
-		initGL2D(w.getWidth(), w.getHeight());
+		initGL2D(d.getWidth(), d.getHeight());
 	}
 	
-	public static void initGL3D(GLWindow w, float fov, float near, float far)
+	public static void initGL3D(Display d, float fov, float near, float far)
 	{
-		initGL3D(w.getWidth(), w.getHeight(), fov, near, far);
+		initGL3D(d.getWidth(), d.getHeight(), fov, near, far);
 	}
 }

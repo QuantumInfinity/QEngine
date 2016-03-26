@@ -130,7 +130,7 @@ public class ShaderProgram
 	{
 		program = ARBShaderObjects.glCreateProgramObjectARB();
 		if (program == 0)
-			throw new RuntimeException("Shader = 0");
+			throw new RuntimeException("Failed to create program object");
 		
 		for (Integer shader:shaders)
 			ARBShaderObjects.glAttachObjectARB(program, shader);
@@ -153,10 +153,13 @@ public class ShaderProgram
 	
 	public void destroy()
 	{
-		for (Integer shader:shaders)
-			ARBShaderObjects.glDeleteObjectARB(shader);
-		GL20.glUseProgram(0);
-		GL20.glDeleteProgram(program);
+		if (compiled)
+		{
+			for (Integer shader:shaders)
+				ARBShaderObjects.glDeleteObjectARB(shader);
+			GL20.glUseProgram(0);
+			GL20.glDeleteProgram(program);
+		}
 	}
 	
 	protected int createShader(String filename, int shaderType) throws Exception
@@ -185,4 +188,6 @@ public class ShaderProgram
 	{
 		return ARBShaderObjects.glGetInfoLogARB(obj, ARBShaderObjects.glGetObjectParameteriARB(obj, ARBShaderObjects.GL_OBJECT_INFO_LOG_LENGTH_ARB));
 	}
+	
+	
 }

@@ -128,9 +128,9 @@ public class Engine
 	
 	public final void destroy()
 	{
+		onDestroy();
 		errorCallback.free();
 		GLFW.glfwTerminate();
-		onDestroy();
 	}
 	
 	public final long getMillis()

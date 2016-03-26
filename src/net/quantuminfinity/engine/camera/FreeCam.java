@@ -2,7 +2,7 @@ package net.quantuminfinity.engine.camera;
 
 import org.lwjgl.glfw.GLFW;
 
-import net.quantuminfinity.engine.display.GLWindow;
+import net.quantuminfinity.engine.display.Display;
 import net.quantuminfinity.engine.gl.util.Project;
 import net.quantuminfinity.engine.math.vector.Vector2;
 import net.quantuminfinity.engine.math.vector.Vector3;
@@ -12,7 +12,6 @@ public class FreeCam
 	public Vector3 pos, dir, up;
 	public Vector2 sensivity;
 	public float speed = 4/60f, smod = 1, smodmod = 1.01f;
-	boolean mouseLocked = false;
 	
 	public FreeCam()
 	{
@@ -37,30 +36,28 @@ public class FreeCam
 		sensivity = new Vector2(.005f, .01f);
 	}
 	
-	public void update(GLWindow in)
+	public void update(Display d)
 	{
-		if (in.isMouseButtonDown(0) && !mouseLocked)
+		if (d.wasMouseButtonPressed(GLFW.GLFW_MOUSE_BUTTON_LEFT))
 		{
-			mouseLocked = true;
-			in.setMouseGrabbed(true);
-			in.getMouseDX();
-			in.getMouseDY();
+			d.setMouseGrabbed(true);
+			d.getMouseDX();
+			d.getMouseDY();
 		}
 		
-		if ((!in.isMouseButtonDown(0) && mouseLocked) || in.iskeyDown(GLFW.GLFW_KEY_ESCAPE))
+		if (d.wasMouseButtonReleased(GLFW.GLFW_MOUSE_BUTTON_LEFT) || d.wasKeyPressed(GLFW.GLFW_KEY_ESCAPE))
 		{
-			mouseLocked = false;
-			in.setMouseGrabbed(false);
+			d.setMouseGrabbed(false);
 		}
 		
-		if (!in.isMouseGrabbed())
+		if (!d.isMouseGrabbed())
 			return;
 		
 		float phi = (float) Math.acos(dir.y);
 		float theta = (float) Math.atan2(dir.z, dir.x);
 		
-		theta += in.getMouseDX() * sensivity.x;
-		phi += in.getMouseDY() * sensivity.x;
+		theta += d.getMouseDX() * sensivity.x;
+		phi += d.getMouseDY() * sensivity.x;
 		
 		dir.x = (float) (Math.cos(theta) * Math.sin(phi));
 		dir.y = (float) Math.cos(phi);
@@ -68,20 +65,20 @@ public class FreeCam
 		
 		float spd = speed;
 		
-		if (in.iskeyDown(GLFW.GLFW_KEY_LEFT_CONTROL))
+		if (d.isKeyDown(GLFW.GLFW_KEY_LEFT_CONTROL))
 			spd *= 10;
 		
-		if (in.iskeyDown(GLFW.GLFW_KEY_W))
+		if (d.isKeyDown(GLFW.GLFW_KEY_W))
 			pos.add(dir, spd);
-		if (in.iskeyDown(GLFW.GLFW_KEY_S))
+		if (d.isKeyDown(GLFW.GLFW_KEY_S))
 			pos.add(dir, -spd);
-		if (in.iskeyDown(GLFW.GLFW_KEY_A))
+		if (d.isKeyDown(GLFW.GLFW_KEY_A))
 			pos.addCrossed(dir, up, -spd);
-		if (in.iskeyDown(GLFW.GLFW_KEY_D))
+		if (d.isKeyDown(GLFW.GLFW_KEY_D))
 			pos.addCrossed(dir, up, spd);
-		if (in.iskeyDown(GLFW.GLFW_KEY_SPACE))
+		if (d.isKeyDown(GLFW.GLFW_KEY_SPACE))
 			pos.y += spd;
-		if (in.iskeyDown(GLFW.GLFW_KEY_LEFT_SHIFT))
+		if (d.isKeyDown(GLFW.GLFW_KEY_LEFT_SHIFT))
 			pos.y -= spd;
 	}
 	
