@@ -6,17 +6,28 @@ import java.util.ArrayList;
 import java.util.HashMap;
 
 import org.lwjgl.BufferUtils;
-import org.lwjgl.opengl.ARBShaderObjects;
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL20;
+import org.lwjgl.opengl.GL32;
+import org.lwjgl.opengl.GL40;
+import org.lwjgl.opengl.GL43;
 
+import net.quantuminfinity.engine.display.Context;
+import net.quantuminfinity.engine.display.Display;
 import net.quantuminfinity.engine.math.vector.Vector2;
 import net.quantuminfinity.engine.math.vector.Vector3;
 import net.quantuminfinity.engine.math.vector.Vector4;
 import net.quantuminfinity.engine.resource.ResourceLoader;
 
 public class ShaderProgram
-{	
+{
+	public static final int SHADERTYPE_VERTEX = GL20.GL_VERTEX_SHADER;
+	public static final int SHADERTYPE_FRAGMENT = GL20.GL_FRAGMENT_SHADER;
+	public static final int SHADERTYPE_GEOMETRY = GL32.GL_GEOMETRY_SHADER;
+	public static final int SHADERTYPE_TESS_EVALUATION = GL40.GL_TESS_EVALUATION_SHADER;
+	public static final int SHADERTYPE_TESS_CONTROL = GL40.GL_TESS_CONTROL_SHADER;
+	public static final int SHADERTYPE_COMPUTE = GL43.GL_COMPUTE_SHADER;
+	
 	protected ArrayList<Integer> shaders;
 	protected int program;
 	protected boolean compiled;
@@ -27,9 +38,105 @@ public class ShaderProgram
 	
 	public ShaderProgram()
 	{
+		if (Display.getContext() != Context.OPENGL)
+			throw new UnsupportedOperationException("Unsupported context: " + Display.getContext().name());
 		shaders = new ArrayList<Integer>();
 		compiled = false;
 		uniforms = new HashMap<String, Integer>();
+	}
+	
+	public ShaderProgram bind()
+	{
+		if(compiled)
+			GL20.glUseProgram(program);
+		return this;
+	}
+	
+	public ShaderProgram release()
+	{
+		GL20.glUseProgram(0);
+		return this;
+	}
+	
+	public void destroy()
+	{
+		if (compiled)
+		{
+			for (Integer shader:shaders)
+				GL20.glDeleteShader(shader);
+			GL20.glUseProgram(0);
+			GL20.glDeleteProgram(program);
+		}
+	}
+	
+	public ShaderProgram addShader(String location, int shaderType)
+	{
+		if (compiled)
+			throw new UnsupportedOperationException("Shader already compiled");
+		int shader = 0;
+		try{
+			shader = createShader(location, shaderType);
+		}catch(Exception e)
+		{
+			e.printStackTrace();
+		}
+		if (shader == 0)
+			throw new RuntimeException("Error in shader");
+		shaders.add(shader);
+		return this;
+	}
+	
+	public ShaderProgram compile()
+	{
+		program = GL20.glCreateProgram();
+		if (program == 0)
+			throw new RuntimeException("Failed to create program object");
+		
+		for (Integer shader:shaders)
+			GL20.glAttachShader(program, shader);
+		GL20.glLinkProgram(program);
+		if (GL20.glGetProgrami(program, GL20.GL_LINK_STATUS) == GL11.GL_FALSE)
+		{
+			System.err.println(getLogInfo(program));
+			return this;
+		}
+		for (Integer shader:shaders)
+			GL20.glDetachShader(program, shader);
+		GL20.glValidateProgram(program);
+		if (GL20.glGetProgrami(program, GL20.GL_VALIDATE_STATUS) == GL11.GL_FALSE)
+		{
+			System.err.println(getLogInfo(program));
+			return this;
+		}
+		compiled = true;
+		return this;
+	}
+	
+	protected int createShader(String filename, int shaderType) throws Exception
+	{
+		int shader = 0;
+		try {
+			shader = GL20.glCreateShader(shaderType);
+
+			if(shader == 0)
+				return 0;
+
+			GL20.glShaderSource(shader, ShaderPreProcessor.process(ResourceLoader.readResource(filename)));
+			GL20.glCompileShader(shader);
+			if (GL20.glGetShaderi(shader, GL20.GL_COMPILE_STATUS) == GL11.GL_FALSE)
+				throw new RuntimeException("Error creating shader: " + getLogInfo(shader));
+
+			return shader;
+		}catch(Exception exc)
+		{
+			GL20.glDeleteShader(shader);
+			throw exc;
+		}
+	}
+	
+	protected static String getLogInfo(int obj)
+	{
+		return GL20.glGetShaderInfoLog(obj, GL20.glGetShaderi(obj, GL20.GL_INFO_LOG_LENGTH));
 	}
 	
 	public int getUniformLocation(String uniform)
@@ -97,95 +204,5 @@ public class ShaderProgram
 	public void setUniform(String uniform, float x, float y, float z, float w)
 	{
 		GL20.glUniform4f(getUniformLocation(uniform), x, y, z, w);
-	}
-	
-	public void bind()
-	{
-		if(compiled)
-			ARBShaderObjects.glUseProgramObjectARB(program);
-	}
-	
-	public void release()
-	{
-		ARBShaderObjects.glUseProgramObjectARB(0);
-	}
-	
-	public void addShader(String location, int shaderType)
-	{
-		if (compiled)
-			throw new UnsupportedOperationException("Shader already compiled");
-		int shader = 0;
-		try{
-			shader = createShader(location, shaderType);
-		}catch(Exception e)
-		{
-			e.printStackTrace();
-		}
-		if (shader == 0)
-			throw new RuntimeException("Error in shader");
-		shaders.add(shader);
-	}
-	
-	public void compile()
-	{
-		program = ARBShaderObjects.glCreateProgramObjectARB();
-		if (program == 0)
-			throw new RuntimeException("Failed to create program object");
-		
-		for (Integer shader:shaders)
-			ARBShaderObjects.glAttachObjectARB(program, shader);
-		ARBShaderObjects.glLinkProgramARB(program);
-		if (ARBShaderObjects.glGetObjectParameteriARB(program, ARBShaderObjects.GL_OBJECT_LINK_STATUS_ARB) == GL11.GL_FALSE)
-		{
-			System.err.println(getLogInfo(program));
-			return;
-		}
-		for (Integer shader:shaders)
-			ARBShaderObjects.glDetachObjectARB(program, shader);
-		ARBShaderObjects.glValidateProgramARB(program);
-		if (ARBShaderObjects.glGetObjectParameteriARB(program, ARBShaderObjects.GL_OBJECT_VALIDATE_STATUS_ARB) == GL11.GL_FALSE)
-		{
-			System.err.println(getLogInfo(program));
-			return;
-		}
-		compiled = true;
-	}
-	
-	public void destroy()
-	{
-		if (compiled)
-		{
-			for (Integer shader:shaders)
-				ARBShaderObjects.glDeleteObjectARB(shader);
-			GL20.glUseProgram(0);
-			GL20.glDeleteProgram(program);
-		}
-	}
-	
-	protected int createShader(String filename, int shaderType) throws Exception
-	{
-		int shader = 0;
-		try {
-			shader = ARBShaderObjects.glCreateShaderObjectARB(shaderType);
-
-			if(shader == 0)
-				return 0;
-
-			ARBShaderObjects.glShaderSourceARB(shader, ShaderPreProcessor.process(ResourceLoader.readResource(filename)));
-			ARBShaderObjects.glCompileShaderARB(shader);
-			if (ARBShaderObjects.glGetObjectParameteriARB(shader, ARBShaderObjects.GL_OBJECT_COMPILE_STATUS_ARB) == GL11.GL_FALSE)
-				throw new RuntimeException("Error creating shader: " + getLogInfo(shader));
-
-			return shader;
-		}catch(Exception exc)
-		{
-			ARBShaderObjects.glDeleteObjectARB(shader);
-			throw exc;
-		}
-	}
-	
-	protected static String getLogInfo(int obj)
-	{
-		return ARBShaderObjects.glGetInfoLogARB(obj, ARBShaderObjects.glGetObjectParameteriARB(obj, ARBShaderObjects.GL_OBJECT_INFO_LOG_LENGTH_ARB));
 	}
 }
