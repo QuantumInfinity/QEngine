@@ -5,19 +5,19 @@ import java.nio.ByteBuffer;
 import org.lwjgl.BufferUtils;
 import org.lwjgl.glfw.GLFW;
 import org.lwjgl.glfw.GLFWVidMode;
-import org.lwjgl.opengl.GL;
+import org.lwjgl.glfw.GLFWWindowSizeCallback;
 import org.lwjgl.opengl.GL11;
-import org.lwjgl.opengles.GLES;
-import org.lwjgl.opengles.GLES20;
 
-public class Display extends DisplayCallbacks
+public class Display
 {
-	private final long windowID;
-	private final Context ctx;
+	private static long windowID = 0;
+	private static Context ctx;
+	private static ResizeCallback resizeCallback;
 	
-	public Display(int width, int height, Context ctx)
+	public static void create(int width, int height, String title, Context ctx)
 	{
-		this.ctx = ctx;
+		Display.ctx = ctx;
+		
 		GLFW.glfwWindowHint(GLFW.GLFW_VISIBLE, GL11.GL_FALSE);
 		windowID = GLFW.glfwCreateWindow(width, height, "", 0, 0);
 		if (windowID == 0)
@@ -27,56 +27,79 @@ public class Display extends DisplayCallbacks
 		GLFW.glfwSetWindowPos(windowID, (vidmode.width() - width) / 2, (vidmode.height() - height) / 2);
 		GLFW.glfwMakeContextCurrent(windowID);
 		
-		setCallbacks(windowID);
+		if (resizeCallback == null)
+			resizeCallback = new ResizeCallback();
+		GLFW.glfwSetWindowSizeCallback(windowID, resizeCallback);
+		Mouse.initialize(windowID);
+		Keyboard.initialize(windowID);
 		
 		GLFW.glfwShowWindow(windowID);
 		
 		ctx.create();
 	}
 	
-	public void close()
+	public static void close()
 	{
-		freeCallbacks();
+		resizeCallback.free();
+		resizeCallback = null;
+		Mouse.terminate();
+		Keyboard.terminate();
 		GLFW.glfwDestroyWindow(windowID);
+		windowID = 0;
 	}
 	
-	public void update()
+	public static Context getContext()
+	{
+		return ctx;
+	}
+	
+	public static void update()
 	{
 		GLFW.glfwSwapBuffers(windowID);
 		GLFW.glfwPollEvents();
 	}
 	
-	public void setTitle(String title)
+	public static void setTitle(String title)
 	{
 		GLFW.glfwSetWindowTitle(windowID, title);
 	}
 	
-	public boolean isCloseRequested()
+	public static boolean isCloseRequested()
 	{
 		return GLFW.glfwWindowShouldClose(windowID) == GL11.GL_TRUE;
 	}
 	
-	public long getWindowID()
+	public static long getWindowID()
 	{
 		return windowID;
 	}
 	
-	public void setSync(int sync)
+	public static void setSync(int sync)
 	{
 		GLFW.glfwSwapInterval(sync);
 	}
 	
-	public void setMouseGrabbed(boolean grabbed)
+	public static boolean wasResized()
 	{
-		GLFW.glfwSetInputMode(windowID, GLFW.GLFW_CURSOR, grabbed ? GLFW.GLFW_CURSOR_DISABLED : GLFW.GLFW_CURSOR_NORMAL);
+		return resizeCallback.wasResized();
 	}
 	
-	public boolean isMouseGrabbed()
+	public static int getWidth()
 	{
-		return GLFW.glfwGetInputMode(windowID, GLFW.GLFW_CURSOR) == GLFW.GLFW_CURSOR_DISABLED;
+		return resizeCallback.getWidth();
 	}
-
-	public void saveScreenShot(String name, String format)
+	
+	public static int getHeight()
+	{
+		return resizeCallback.getHeight();
+	}
+	
+	public static float getAspect()
+	{
+		return resizeCallback.getAspect();
+	}
+	
+	public static void saveScreenShot(String name, String format)
 	{
 		int width = getWidth();
 		int height = getHeight();
@@ -87,7 +110,7 @@ public class Display extends DisplayCallbacks
 		new Thread(new ImageSaveThread(data, width, height, name, format)).start();
 	}
 	
-	/** Some GLFW hints. These must be called before the display is created! */
+	/** Some GLFW hints. These must be called before the display is created */
 	
 	public static void resizeableHint(boolean resizeable)
 	{
@@ -108,43 +131,46 @@ public class Display extends DisplayCallbacks
 		GLFW.glfwWindowHint(GLFW.GLFW_CONTEXT_VERSION_MINOR, minor);
 	}
 	
-	private static interface IContext
+	private static class ResizeCallback extends GLFWWindowSizeCallback
 	{
-		public void create();
-		public void readPixels(int width, int height, ByteBuffer output);
-	}
-	
-	public static enum Context implements IContext
-	{
-		OPENGL
-		{
-			@Override
-			public void create()
-			{
-				GL.createCapabilities();
-			}
-
-			@Override
-			public void readPixels(int width, int height, ByteBuffer output)
-			{
-				GL11.glReadBuffer(GL11.GL_FRONT);
-				GL11.glReadPixels(0, 0, width, height, GL11.GL_RGBA, GL11.GL_UNSIGNED_BYTE, output);
-			}
-		},
+		private int width, height;
+		private boolean resized;
 		
-		OPENGL_ES
+		ResizeCallback()
 		{
-			@Override
-			public void create()
-			{
-				GLES.createCapabilities();
-			}
-
-			@Override
-			public void readPixels(int width, int height, ByteBuffer output)
-			{
-				GLES20.glReadPixels(0, 0, width, height, GLES20.GL_RGBA, GLES20.GL_UNSIGNED_BYTE, output);
-			}
-		};
+			this.resized = false;
+			this.width = 0;
+			this.height = 0;
+		}
+		
+		@Override
+		public void invoke(long window, int nWidth, int nHeight)
+		{
+			width = nWidth;
+			height = nHeight;
+			resized = true;
+		}
+		
+		boolean wasResized()
+		{
+			boolean _resized = resized;
+			resized = false;
+			return _resized;
+		}
+		
+		int getWidth()
+		{
+			return width;
+		}
+		
+		int getHeight()
+		{
+			return height;
+		}
+		
+		float getAspect()
+		{
+			return (float) getWidth() / (float) getHeight();
+		}
 	}
 }

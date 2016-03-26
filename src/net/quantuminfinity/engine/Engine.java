@@ -9,9 +9,8 @@ import net.quantuminfinity.engine.bootstrap.NativeLoader;
 import net.quantuminfinity.engine.util.FPSMeter;
 
 public class Engine
-{	
-	static GLFWErrorCallback errorCallback;
-	
+{
+	private static GLFWErrorCallback errorCallback;
 	static
 	{
 		NativeLoader nl = new NativeLoader("natives");
@@ -111,12 +110,15 @@ public class Engine
 	
 	public final void create()
 	{
-		if (GLFW.glfwInit() != GLFW.GLFW_TRUE)
-			throw new RuntimeException("Unable to initialize GLFW");
-		if (errorCallback == null)
-			GLFW.glfwSetErrorCallback(errorCallback = GLFWErrorCallback.createPrint(System.err));
 		run = true;
 		startTime = System.nanoTime();
+		
+		if (GLFW.glfwInit() != GLFW.GLFW_TRUE)
+			throw new RuntimeException("Unable to initialize GLFW");
+		
+		if (errorCallback == null)
+			GLFW.glfwSetErrorCallback(errorCallback = GLFWErrorCallback.createPrint(System.err));
+		
 		onCreate();
 	}
 	

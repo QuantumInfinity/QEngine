@@ -3,6 +3,8 @@ package net.quantuminfinity.engine.camera;
 import org.lwjgl.glfw.GLFW;
 
 import net.quantuminfinity.engine.display.Display;
+import net.quantuminfinity.engine.display.Keyboard;
+import net.quantuminfinity.engine.display.Mouse;
 import net.quantuminfinity.engine.gl.util.Project;
 import net.quantuminfinity.engine.math.vector.Vector2;
 import net.quantuminfinity.engine.math.vector.Vector3;
@@ -38,26 +40,24 @@ public class FreeCam
 	
 	public void update(Display d)
 	{
-		if (d.wasMouseButtonPressed(GLFW.GLFW_MOUSE_BUTTON_LEFT))
+		if (Mouse.wasMouseButtonPressed(GLFW.GLFW_MOUSE_BUTTON_LEFT))
 		{
-			d.setMouseGrabbed(true);
-			d.getMouseDX();
-			d.getMouseDY();
+			Mouse.setMouseGrabbed(true);
+			Mouse.getMouseDX();
+			Mouse.getMouseDY();
 		}
 		
-		if (d.wasMouseButtonReleased(GLFW.GLFW_MOUSE_BUTTON_LEFT) || d.wasKeyPressed(GLFW.GLFW_KEY_ESCAPE))
-		{
-			d.setMouseGrabbed(false);
-		}
+		if (Mouse.wasMouseButtonReleased(GLFW.GLFW_MOUSE_BUTTON_LEFT) || Keyboard.wasKeyPressed(GLFW.GLFW_KEY_ESCAPE))
+			Mouse.setMouseGrabbed(false);
 		
-		if (!d.isMouseGrabbed())
+		if (!Mouse.isMouseGrabbed())
 			return;
 		
 		float phi = (float) Math.acos(dir.y);
 		float theta = (float) Math.atan2(dir.z, dir.x);
 		
-		theta += d.getMouseDX() * sensivity.x;
-		phi += d.getMouseDY() * sensivity.x;
+		theta += Mouse.getMouseDX() * sensivity.x;
+		phi += Mouse.getMouseDY() * sensivity.x;
 		
 		dir.x = (float) (Math.cos(theta) * Math.sin(phi));
 		dir.y = (float) Math.cos(phi);
@@ -65,20 +65,20 @@ public class FreeCam
 		
 		float spd = speed;
 		
-		if (d.isKeyDown(GLFW.GLFW_KEY_LEFT_CONTROL))
+		if (Keyboard.isKeyDown(GLFW.GLFW_KEY_LEFT_CONTROL))
 			spd *= 10;
 		
-		if (d.isKeyDown(GLFW.GLFW_KEY_W))
+		if (Keyboard.isKeyDown(GLFW.GLFW_KEY_W))
 			pos.add(dir, spd);
-		if (d.isKeyDown(GLFW.GLFW_KEY_S))
+		if (Keyboard.isKeyDown(GLFW.GLFW_KEY_S))
 			pos.add(dir, -spd);
-		if (d.isKeyDown(GLFW.GLFW_KEY_A))
+		if (Keyboard.isKeyDown(GLFW.GLFW_KEY_A))
 			pos.addCrossed(dir, up, -spd);
-		if (d.isKeyDown(GLFW.GLFW_KEY_D))
+		if (Keyboard.isKeyDown(GLFW.GLFW_KEY_D))
 			pos.addCrossed(dir, up, spd);
-		if (d.isKeyDown(GLFW.GLFW_KEY_SPACE))
+		if (Keyboard.isKeyDown(GLFW.GLFW_KEY_SPACE))
 			pos.y += spd;
-		if (d.isKeyDown(GLFW.GLFW_KEY_LEFT_SHIFT))
+		if (Keyboard.isKeyDown(GLFW.GLFW_KEY_LEFT_SHIFT))
 			pos.y -= spd;
 	}
 	
