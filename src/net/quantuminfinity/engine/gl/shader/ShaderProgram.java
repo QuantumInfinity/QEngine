@@ -17,7 +17,6 @@ import net.quantuminfinity.engine.display.Display;
 import net.quantuminfinity.engine.math.vector.Vector2;
 import net.quantuminfinity.engine.math.vector.Vector3;
 import net.quantuminfinity.engine.math.vector.Vector4;
-import net.quantuminfinity.engine.resource.ResourceLoader;
 
 public class ShaderProgram
 {
@@ -35,6 +34,8 @@ public class ShaderProgram
 	protected IntBuffer ibuffer;
 	
 	protected HashMap<String, Integer> uniforms;
+	protected HashMap<String, Integer> attributes;
+	protected HashMap<String, String> defines;
 	
 	public ShaderProgram()
 	{
@@ -43,6 +44,18 @@ public class ShaderProgram
 		shaders = new ArrayList<Integer>();
 		compiled = false;
 		uniforms = new HashMap<String, Integer>();
+		attributes = new HashMap<String, Integer>();
+		defines = new HashMap<String, String>();
+	}
+	
+	public void addDefineI(String key, int value)
+	{
+		defines.put(key, Integer.toString(value));
+	}
+	
+	public void addDefineF(String key, float value)
+	{
+		defines.put(key, Float.toString(value));
 	}
 	
 	public ShaderProgram bind()
@@ -117,11 +130,10 @@ public class ShaderProgram
 		int shader = 0;
 		try {
 			shader = GL20.glCreateShader(shaderType);
-
 			if(shader == 0)
 				return 0;
 
-			GL20.glShaderSource(shader, ShaderPreProcessor.process(ResourceLoader.readResource(filename)));
+			GL20.glShaderSource(shader, ShaderPreProcessor.tryread(filename, defines));
 			GL20.glCompileShader(shader);
 			if (GL20.glGetShaderi(shader, GL20.GL_COMPILE_STATUS) == GL11.GL_FALSE)
 				throw new RuntimeException("Error creating shader: " + getLogInfo(shader));
@@ -146,6 +158,17 @@ public class ShaderProgram
 		{
 			 loc = GL20.glGetUniformLocation(program, uniform);
 			 uniforms.put(uniform, loc);
+		}
+		return loc;
+	}
+	
+	public int getAttributeLocation(String attribute)
+	{
+		Integer loc = attributes.get(attribute);
+		if (loc == null)
+		{
+			 loc = GL20.glGetAttribLocation(program, attribute);
+			 attributes.put(attribute, loc);
 		}
 		return loc;
 	}
@@ -204,5 +227,12 @@ public class ShaderProgram
 	public void setUniform(String uniform, float x, float y, float z, float w)
 	{
 		GL20.glUniform4f(getUniformLocation(uniform), x, y, z, w);
+	}
+	
+	public static HashMap<String, String> createDefine(String key, String value)
+	{
+		HashMap<String, String> def = new HashMap<String, String>();
+		def.put(key, value);
+		return def;
 	}
 }

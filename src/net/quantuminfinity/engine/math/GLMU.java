@@ -23,25 +23,25 @@ public class GLMU
 		GL11.glMatrixMode(GL11.GL_MODELVIEW);
 	}
 	
-	public static void initGL3D(double width, double height, float fov, float near, float far)
+	public static void initGL3D(int width, int height, float fov, float near, float far)
 	{
 		GL11.glMatrixMode(GL11.GL_PROJECTION);
 		GL11.glLoadIdentity();
 		GL11.glDepthFunc(GL11.GL_LEQUAL);
-    //    GLU.gluPerspective(67, (float) width / (float) height, near, far);
 		Project.gluPerspective(fov, (float) width / (float) height, near, far);
         GL11.glMatrixMode(GL11.GL_MODELVIEW);
         GL11.glLoadIdentity();
 		GL11.glEnable(GL11.GL_DEPTH_TEST);
+	//	GL11.glViewport(0, 0, width, height);
 	}
 	
-	public static void initGL2D(Display d)
+	public static void initGL2D()
 	{
-		initGL2D(d.getWidth(), d.getHeight());
+		initGL2D(Display.getWidth(), Display.getHeight());
 	}
 	
-	public static void initGL3D(Display d, float fov, float near, float far)
+	public static void initGL3D(float fov, float near, float far)
 	{
-		initGL3D(d.getWidth(), d.getHeight(), fov, near, far);
+		initGL3D(Display.getWidth(), Display.getHeight(), fov, near, far);
 	}
 }

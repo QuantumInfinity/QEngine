@@ -14,6 +14,8 @@ public class PackageDomain implements IResourceDomain
 	@Override
 	public InputStream openStream(String path) throws FileNotFoundException
 	{
+		if (!path.startsWith("/"))
+			path = "/" + path;
 		return ResourceLoader.class.getResourceAsStream(path);
 	}
 }

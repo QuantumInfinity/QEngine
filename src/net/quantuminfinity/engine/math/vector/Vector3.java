@@ -1,5 +1,7 @@
 package net.quantuminfinity.engine.math.vector;
 
+import java.util.Locale;
+
 public class Vector3 {
 	
 	public float x;
@@ -20,14 +22,26 @@ public class Vector3 {
 		this.z = 0;
 	}
 	
+	public Vector3(Vector3 v)
+	{
+		this.x = v.x;
+		this.y = v.y;
+		this.z = v.z;
+	}
+	
 	public float length()
 	{
 		return (float) Math.sqrt(x*x + y*y + z*z);
 	}
 	
-	public Vector3 copy()
+	public float lengthSq()
 	{
-		return new Vector3(x,y,z);
+		return x*x + y*y + z*z;
+	}
+	
+	public Vector3 clone()
+	{
+		return new Vector3(x, y, z);
 	}
 	
 	public Vector3 set(float x, float y, float z)
@@ -35,6 +49,30 @@ public class Vector3 {
 		this.x = x;
 		this.y = y;
 		this.z = z;
+		return this;
+	}
+	
+	public Vector3 set(Vector3 v)
+	{
+		this.x = v.x;
+		this.y = v.y;
+		this.z = v.z;
+		return this;
+	}
+	
+	public Vector3 min(Vector3 v)
+	{
+		this.x = Math.min(x, v.x);
+		this.y = Math.min(y, v.y);
+		this.z = Math.min(z, v.z);
+		return this;
+	}
+	
+	public Vector3 max(Vector3 v)
+	{
+		this.x = Math.max(x, v.x);
+		this.y = Math.max(y, v.y);
+		this.z = Math.max(z, v.z);
 		return this;
 	}
 	
@@ -92,9 +130,18 @@ public class Vector3 {
 		return this;
 	}
 	
-	public Vector3 addl(float length)
+
+	public Vector3 div(float n)
 	{
-		Vector3 v = this.copy().normalise().scale(length);
+		this.x /= n;
+		this.y /= n;
+		this.z /= n;
+		return this;
+	}
+	
+	public Vector3 addl(float length)
+	{		
+		Vector3 v = clone().normalise().scale(length);
 		this.x += v.x;
 		this.y += v.y;
 		this.z += v.z;
@@ -110,14 +157,18 @@ public class Vector3 {
 	
 	public float dot(Vector3 b)
 	{
-		return this.x * b.x + this.y * b.y + this.z * b.z;
+		return x * b.x + y * b.y + z * b.z;
 	}
 	
 	public Vector3 cross(Vector3 v)
 	{
-		return new Vector3(y*v.z - z*v.y,
-						   z*v.x - x*v.z,
-						   x*v.y - y*v.x);
+		float tx = y*v.z - z*v.y;
+		float ty = z*v.x - x*v.z;
+		z = x*v.y - y*v.x;
+		y = ty;
+		x = tx;
+		
+		return this;
 	}
 	
 	float tmpx,tmpy,tmpz;
@@ -131,5 +182,11 @@ public class Vector3 {
 		y = x*(oc * axis.x * axis.y + axis.z * s) + y*(oc * axis.y * axis.y + c) + z*(oc * axis.y * axis.z - axis.x * s);
 		z = x*(oc * axis.z * axis.x - axis.y * s) + y*(oc * axis.y * axis.z + axis.x * s) + z*(oc * axis.z * axis.z + c);
 		return this;
+	}
+	
+	@Override
+	public String toString()
+	{
+		return String.format(Locale.ENGLISH, "(%.2f, %.2f, %.2f)", x, y, z);
 	}
 }

@@ -1,5 +1,6 @@
 package net.quantuminfinity.engine.gl.shader.compute;
 
+import java.nio.ByteBuffer;
 import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
 
@@ -21,6 +22,12 @@ public class ShaderStorageBuffer
 	}
 	
 	public void setData(FloatBuffer data)
+	{
+		GL15.glBindBuffer(GL43.GL_SHADER_STORAGE_BUFFER, id.get(0));
+		GL15.glBufferData(GL43.GL_SHADER_STORAGE_BUFFER, data, GL15.GL_STATIC_DRAW);
+	}
+	
+	public void setData(ByteBuffer data)
 	{
 		GL15.glBindBuffer(GL43.GL_SHADER_STORAGE_BUFFER, id.get(0));
 		GL15.glBufferData(GL43.GL_SHADER_STORAGE_BUFFER, data, GL15.GL_STATIC_DRAW);

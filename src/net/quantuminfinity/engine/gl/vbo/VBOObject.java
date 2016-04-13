@@ -33,8 +33,8 @@ public class VBOObject implements GLObject
 		GL30.glBindVertexArray(0);
 		
 		indiceBuffer = GL15.glGenBuffers();
-		GL15.glBindBuffer(GL15.GL_ARRAY_BUFFER, indiceBuffer);
-		GL15.glBufferData(GL15.GL_ARRAY_BUFFER, Util.asIntBuffer(indices), GL15.GL_STATIC_DRAW);
+		GL15.glBindBuffer(GL15.GL_ELEMENT_ARRAY_BUFFER, indiceBuffer);
+		GL15.glBufferData(GL15.GL_ELEMENT_ARRAY_BUFFER, Util.asIntBuffer(indices), GL15.GL_STATIC_DRAW);
 		GL15.glBindBuffer(GL15.GL_ELEMENT_ARRAY_BUFFER, 0);
 	}
 	
@@ -51,8 +51,6 @@ public class VBOObject implements GLObject
 		GL30.glBindVertexArray(0);
 	}
 	
-	
-	
 	public void render(int rendermode)
 	{
 		GL30.glBindVertexArray(vao);
@@ -60,7 +58,7 @@ public class VBOObject implements GLObject
 
 		GL15.glBindBuffer(GL15.GL_ELEMENT_ARRAY_BUFFER, indiceBuffer);
 		GL11.glDrawElements(rendermode, indiceCount, GL11.GL_UNSIGNED_INT, 0);
-
+		
 		GL15.glBindBuffer(GL15.GL_ELEMENT_ARRAY_BUFFER, 0);
 		GL20.glDisableVertexAttribArray(0);
 		GL30.glBindVertexArray(0);

@@ -9,9 +9,6 @@ import java.util.Map;
 
 public class ResourceLoader
 {
-	public static final String DOMAIN_FILE = "file:";
-	public static final String DOMAIN_PACKAGE = "pkg:";
-	
 	public static char DOMAIN_SEPERATOR = ':';
 	
 	static Map<String, IResourceDomain> domains;
@@ -30,7 +27,10 @@ public class ResourceLoader
 	
 	public static InputStream getResourceAsStream(String file) throws IOException
 	{
-		String prefix = file.substring(0, file.indexOf(DOMAIN_SEPERATOR));
+		int idx = file.indexOf(DOMAIN_SEPERATOR);
+		if (idx == -1)
+			throw new IllegalArgumentException("No domain specified.");
+		String prefix = file.substring(0, idx);
 		
 		IResourceDomain domain = domains.get(prefix);
 		
@@ -57,6 +57,29 @@ public class ResourceLoader
 				reader.close();			
 			throw e;
 		}
+	}
+	
+	public static void readResource(String resource, LineCallback cbck) throws IOException
+	{
+		BufferedReader reader = null;
+		try {
+			String line;
+			int ln = 0;
+			reader = new BufferedReader(new InputStreamReader(getResourceAsStream(resource)));
+			while((line = reader.readLine()) != null)
+				cbck.onLine(line, ln++);
+			reader.close();
+		} catch(IOException e)
+		{
+			if (reader != null)
+				reader.close();			
+			throw e;
+		}
+	}
+	
+	public static interface LineCallback
+	{
+		public void onLine(String line, int ln);
 	}
 	
 	public static class DomainNotFoundException extends IOException

@@ -117,6 +117,41 @@ public class Vector2
 		return this;
 	}
 	
+	public Vector2 div(float x, float y)
+	{
+		this.setX(getX() / x);
+		this.setY(getY() / y);
+		return this;
+	}
+	
+	public Vector2 div(float x)
+	{
+		this.setX(getX() / x);
+		this.setY(getY() / x);
+		return this;
+	}
+	
+	public Vector2 min(Vector2 v)
+	{
+		setX(Math.min(getX(), v.getX()));
+		setY(Math.min(getY(), v.getY()));
+		return this;
+	}
+	
+	public Vector2 max(Vector2 v)
+	{
+		setX(Math.max(getX(), v.getX()));
+		setY(Math.max(getY(), v.getY()));
+		return this;
+	}
+	
+	public float distanceTo(Vector2 v)
+	{
+		float dx = getX() - v.getX();
+		float dy = getY() - v.getY();
+		return (float) Math.sqrt(dx * dx + dy * dy);
+	}
+	
 	public float dot(Vector2 v)
 	{
 		return v.getX() * getX() + v.getY() * getY();
@@ -170,5 +205,11 @@ public class Vector2
 	public void setY(float y)
 	{
 		this.y = y;
+	}
+
+	@Override
+	public String toString()
+	{
+		return "(" + x + ", " + y + ")";
 	}
 }

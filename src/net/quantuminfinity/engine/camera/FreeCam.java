@@ -2,7 +2,6 @@ package net.quantuminfinity.engine.camera;
 
 import org.lwjgl.glfw.GLFW;
 
-import net.quantuminfinity.engine.display.Display;
 import net.quantuminfinity.engine.display.Keyboard;
 import net.quantuminfinity.engine.display.Mouse;
 import net.quantuminfinity.engine.gl.util.Project;
@@ -38,7 +37,7 @@ public class FreeCam
 		sensivity = new Vector2(.005f, .01f);
 	}
 	
-	public void update(Display d)
+	public void update()
 	{
 		if (Mouse.wasMouseButtonPressed(GLFW.GLFW_MOUSE_BUTTON_LEFT))
 		{
